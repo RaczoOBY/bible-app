@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String
+  image         String?
+  xp            Int       @default(0)
+  nivel         Int       @default(1)
+  sequenciaAtual Int      @default(0)
+  maiorSequencia Int      @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  leituras      Leitura[]
+  conquistas    UserConquista[]
+  anotacoes     Anotacao[]
+}
+
+model Leitura {
+  id          String   @id @default(cuid())
+  userId      String
+  mes         Int      // 1-12
+  dia         Int      // 1-25
+  tipo        String   // nt1, nt2, at1, at2
+  referencia  String   // ex: "Mt 1:1-17"
+  completada  Boolean  @default(false)
+  completadaEm DateTime?
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, mes, dia, tipo])
+  @@index([userId, mes, dia])
+}
+
+model Conquista {
+  id          String   @id @default(cuid())
+  codigo      String   @unique // primeiro_dia, seq_7, etc
+  nome        String
+  descricao   String
+  xp          Int
+  icone       String
+  tipo        String   @default("unica") // unica, repetivel
+  
+  usuarios    UserConquista[]
+  
+  @@index([codigo])
+}
+
+model UserConquista {
+  id           String   @id @default(cuid())
+  userId       String
+  conquistaId  String
+  desbloqueadaEm DateTime @default(now())
+  vezesObtida  Int      @default(1)
+  
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conquista    Conquista @relation(fields: [conquistaId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, conquistaId])
+  @@index([userId])
+}
+
+model Anotacao {
+  id          String   @id @default(cuid())
+  userId      String
+  referencia  String   // ex: "Sl 23:1"
+  texto       String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, referencia])
+}

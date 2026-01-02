@@ -1,0 +1,84 @@
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { prisma } from '@/lib/db/prisma';
+import { getPlanoCompleto } from '@/lib/utils/plano';
+
+export async function GET() {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+
+    // Buscar todas as leituras completadas
+    const leiturasCompletadas = await prisma.leitura.findMany({
+      where: {
+        userId,
+        completada: true,
+      },
+    });
+
+    const plano = getPlanoCompleto();
+    const totalDias = plano.metadata.totalDias;
+    const diasCompletados = new Set<string>();
+
+    leiturasCompletadas.forEach((leitura) => {
+      const chave = `${leitura.mes}-${leitura.dia}`;
+      diasCompletados.add(chave);
+    });
+
+    const diasCompletadosCount = diasCompletados.size;
+    const progressoPercentual = (diasCompletadosCount / totalDias) * 100;
+
+    // Estatísticas por mês
+    const progressoPorMes = plano.meses.map((mes) => {
+      const diasMesCompletados = new Set<number>();
+      
+      leiturasCompletadas
+        .filter((l) => l.mes === mes.id)
+        .forEach((leitura) => {
+          diasMesCompletados.add(leitura.dia);
+        });
+
+      return {
+        mes: mes.id,
+        nome: mes.nome,
+        diasCompletados: diasMesCompletados.size,
+        totalDias: plano.metadata.diasPorMes,
+        percentual: (diasMesCompletados.size / plano.metadata.diasPorMes) * 100,
+      };
+    });
+
+    // Buscar usuário para pegar streak
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        sequenciaAtual: true,
+        maiorSequencia: true,
+        xp: true,
+        nivel: true,
+      },
+    });
+
+    return NextResponse.json({
+      totalDias,
+      diasCompletados: diasCompletadosCount,
+      progressoPercentual: Math.round(progressoPercentual * 100) / 100,
+      progressoPorMes,
+      sequenciaAtual: user?.sequenciaAtual || 0,
+      maiorSequencia: user?.maiorSequencia || 0,
+      xp: user?.xp || 0,
+      nivel: user?.nivel || 1,
+    });
+  } catch (error) {
+    console.error('Erro ao buscar progresso:', error);
+    return NextResponse.json(
+      { error: 'Erro ao buscar progresso' },
+      { status: 500 }
+    );
+  }
+}
