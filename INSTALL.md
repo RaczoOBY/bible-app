@@ -2,13 +2,17 @@
 
 ## 📦 Dependências Necessárias
 
-Execute os seguintes comandos para instalar todas as dependências:
+Execute o seguinte comando para instalar todas as dependências:
 
 ```bash
-npm install @prisma/client@^5.19.0 prisma@^5.19.0 next-auth@beta bcryptjs zustand framer-motion date-fns lucide-react canvas-confetti next-pwa @types/bcryptjs clsx tailwind-merge tsx
+npm install next-auth@^4.24.0 @prisma/client@^5.22.0 prisma@^5.22.0 bcryptjs zustand framer-motion date-fns lucide-react canvas-confetti clsx tailwind-merge tsx @types/bcryptjs
 ```
 
-**Nota sobre Prisma:** Este projeto foi configurado para usar Prisma 5.x. Se você tiver Prisma 7 instalado, pode ocorrer um erro. Use a versão específica acima ou ajuste o schema conforme a documentação do Prisma 7.
+**⚠️ IMPORTANTE:** Todas essas dependências são obrigatórias. O projeto não funcionará sem elas.
+
+**Nota sobre Prisma:** Este projeto foi configurado para usar Prisma 5.x. Se você tiver Prisma 7 instalado, consulte `PRISMA_FIX.md`.
+
+**Nota sobre NextAuth:** Use a versão 4.x (não beta) para maior estabilidade. O middleware foi ajustado para funcionar sem `next-auth/middleware`.
 
 ## 🔧 Configuração Inicial
 

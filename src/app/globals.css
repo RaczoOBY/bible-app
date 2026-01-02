@@ -1,43 +1,65 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Cores primárias - Mint */
-    --primary-mint: #B8E4D8;
-    --primary-sage: #A8D4C4;
-    --primary-teal: #7FBFB0;
-    
-    /* Cores secundárias - Lavender */
-    --secondary-lavender: #D4C4E8;
-    --secondary-lilac: #E8D4F0;
-    --secondary-purple: #9B8BB8;
-    
-    /* Cores de destaque - Peach */
-    --accent-peach: #F8D8C8;
-    --accent-coral: #F0B8A8;
-    --accent-salmon: #E8A090;
-    
-    /* Neutras */
-    --neutral-white: #FFFFFF;
-    --neutral-off-white: #FAFBFC;
-    --neutral-light-gray: #F0F2F5;
-    --neutral-medium-gray: #8890A0;
-    --neutral-dark-gray: #2D3440;
-    --neutral-black: #1A1D24;
-    
-    /* Semânticas */
-    --success: #7FBFB0;
-    --warning: #F0B8A8;
-    --info: #A8C8E8;
-    --highlight: #9B8BB8;
-  }
+@theme {
+  /* Cores primárias - Mint */
+  --color-primary-mint: #B8E4D8;
+  --color-primary-sage: #A8D4C4;
+  --color-primary-teal: #7FBFB0;
   
+  /* Cores secundárias - Lavender */
+  --color-secondary-lavender: #D4C4E8;
+  --color-secondary-lilac: #E8D4F0;
+  --color-secondary-purple: #9B8BB8;
+  
+  /* Cores de destaque - Peach */
+  --color-accent-peach: #F8D8C8;
+  --color-accent-coral: #F0B8A8;
+  --color-accent-salmon: #E8A090;
+  
+  /* Neutras */
+  --color-neutral-white: #FFFFFF;
+  --color-neutral-off-white: #FAFBFC;
+  --color-neutral-light-gray: #F0F2F5;
+  --color-neutral-medium-gray: #8890A0;
+  --color-neutral-dark-gray: #2D3440;
+  --color-neutral-black: #1A1D24;
+  
+  /* Semânticas */
+  --color-success: #7FBFB0;
+  --color-warning: #F0B8A8;
+  --color-info: #A8C8E8;
+  --color-highlight: #9B8BB8;
+  
+  /* Variáveis CSS para uso direto */
+  --primary-mint: #B8E4D8;
+  --primary-sage: #A8D4C4;
+  --primary-teal: #7FBFB0;
+  --secondary-lavender: #D4C4E8;
+  --secondary-lilac: #E8D4F0;
+  --secondary-purple: #9B8BB8;
+  --accent-peach: #F8D8C8;
+  --accent-coral: #F0B8A8;
+  --accent-salmon: #E8A090;
+  --neutral-white: #FFFFFF;
+  --neutral-off-white: #FAFBFC;
+  --neutral-light-gray: #F0F2F5;
+  --neutral-medium-gray: #8890A0;
+  --neutral-dark-gray: #2D3440;
+  --neutral-black: #1A1D24;
+  --success: #7FBFB0;
+  --warning: #F0B8A8;
+  --info: #A8C8E8;
+  --highlight: #9B8BB8;
+}
+
+@layer base {
   * {
-    @apply border-neutral-light-gray;
+    border-color: var(--neutral-light-gray);
   }
   
   body {
-    @apply bg-gradient-to-br from-[#E8D4F0] via-[#FAFBFC] to-[#D4E8E4] text-neutral-dark-gray;
+    background: linear-gradient(to bottom right, #E8D4F0, #FAFBFC 50%, #D4E8E4);
+    color: var(--neutral-dark-gray);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     min-height: 100vh;
   }

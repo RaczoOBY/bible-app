@@ -1,29 +1,29 @@
-import { withAuth } from 'next-auth/middleware';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export default withAuth(
-  function middleware(req) {
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get('next-auth.session-token') || 
+                request.cookies.get('__Secure-next-auth.session-token');
+
+  // Rotas públicas
+  if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
+    if (token) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-        
-        // Rotas públicas
-        if (pathname.startsWith('/login') || pathname.startsWith('/register')) {
-          return !token; // Se já estiver logado, redireciona
-        }
-        
-        // Rotas protegidas
-        return !!token;
-      },
-    },
   }
-);
+
+  // Rotas protegidas
+  if (!token && !pathname.startsWith('/api/auth')) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|manifest.json).*)',
   ],
 };

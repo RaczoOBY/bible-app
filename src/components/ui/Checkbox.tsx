@@ -9,14 +9,23 @@ interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'typ
 }
 
 export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, checked, ...props }, ref) => {
+  ({ className, label, checked, onChange, ...props }, ref) => {
+    // Se checked é fornecido mas não há onChange, usar defaultChecked (uncontrolled)
+    // Caso contrário, usar checked com onChange (controlled)
+    const isControlled = checked !== undefined && onChange !== undefined;
+    
     return (
       <label className="flex items-center gap-3 cursor-pointer group">
         <div className="relative">
           <input
             ref={ref}
             type="checkbox"
-            checked={checked}
+            {...(isControlled 
+              ? { checked, onChange }
+              : checked !== undefined 
+                ? { defaultChecked: checked }
+                : {}
+            )}
             className="sr-only"
             {...props}
           />
@@ -24,8 +33,8 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             className={cn(
               'w-6 h-6 rounded-lg border-2 transition-all duration-300 flex items-center justify-center',
               checked
-                ? 'bg-primary-teal border-primary-teal'
-                : 'bg-white/80 border-neutral-medium-gray group-hover:border-primary-teal'
+                ? 'bg-[var(--primary-teal)] border-[var(--primary-teal)]'
+                : 'bg-white/80 border-[var(--neutral-medium-gray)] group-hover:border-[var(--primary-teal)]'
             )}
           >
             {checked && (
@@ -34,7 +43,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           </div>
         </div>
         {label && (
-          <span className="text-base text-neutral-dark-gray">{label}</span>
+          <span className="text-base text-[var(--neutral-dark-gray)]">{label}</span>
         )}
       </label>
     );

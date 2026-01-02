@@ -26,19 +26,19 @@ export function ReadingCard({
       variant={completada ? 'mint' : 'default'}
       className={cn(
         'cursor-pointer transition-all duration-300 hover:shadow-medium',
-        completada && 'ring-2 ring-primary-teal/30',
+        completada && 'ring-2 ring-[var(--primary-teal)]/30',
         className
       )}
       onClick={onToggle}
     >
       <div className="flex items-center gap-4">
-        <Checkbox checked={completada} />
+        <Checkbox checked={completada} onChange={onToggle} />
         <div className="flex-1">
-          <p className="font-semibold text-neutral-dark-gray">{leitura.livro}</p>
-          <p className="text-sm text-neutral-medium-gray">{referencia}</p>
+          <p className="font-semibold text-[var(--neutral-dark-gray)]">{leitura.livro}</p>
+          <p className="text-sm text-[var(--neutral-medium-gray)]">{referencia}</p>
         </div>
         {completada && (
-          <div className="text-primary-teal font-bold text-sm">+10 XP</div>
+          <div className="text-[var(--primary-teal)] font-bold text-sm">+10 XP</div>
         )}
       </div>
     </Card>
