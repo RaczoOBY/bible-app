@@ -50,7 +50,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
         {(title || onClose) && (
           <div className="flex items-center justify-between p-6 border-b border-black/8">
             {title && (
-              <h2 className="text-xl font-semibold text-[var(--neutral-dark-gray)]">{title}</h2>
+              <h2 className="text-xl font-semibold" style={{ color: 'var(--neutral-dark-gray)' }}>{title}</h2>
             )}
             {onClose && (
               <Button
