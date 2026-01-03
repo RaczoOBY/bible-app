@@ -9,6 +9,7 @@ import { MonthCalendar } from '@/components/features/MonthCalendar';
 import { DayPreviewModal } from '@/components/features/DayPreviewModal';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { SkeletonProgressoPage } from '@/components/ui/Skeleton';
 
 interface ProgressoMes {
   mes: number;
@@ -74,11 +75,7 @@ export default function ProgressoPage() {
   };
 
   if (loading || !progresso) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-neutral-medium-gray">Carregando...</div>
-      </div>
-    );
+    return <SkeletonProgressoPage />;
   }
 
   return (

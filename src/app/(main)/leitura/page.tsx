@@ -13,6 +13,7 @@ import { Toast, ToastType } from '@/components/ui/Toast';
 import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight, Calendar, Home } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { SkeletonLeituraPage } from '@/components/ui/Skeleton';
 import type { LeituraDia } from '@/types/plano';
 
 interface LeituraComStatus extends LeituraDia {
@@ -212,11 +213,7 @@ export default function LeituraPage() {
   const completadas = leituras.filter((l) => l.completada).length;
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-neutral-medium-gray">Carregando...</div>
-      </div>
-    );
+    return <SkeletonLeituraPage />;
   }
 
   const diasCompletadosDoMes = diasCompletados.get(mes) || new Set<number>();

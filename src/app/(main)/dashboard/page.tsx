@@ -17,6 +17,7 @@ import { PendingReadingsAlert } from '@/components/features/PendingReadingsAlert
 import { Toast, ToastType } from '@/components/ui/Toast';
 import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { SkeletonDashboard } from '@/components/ui/Skeleton';
 import type { LeituraDia } from '@/types/plano';
 import type { StatusLeituraMes } from '@/lib/utils/plano';
 
@@ -223,11 +224,7 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-neutral-medium-gray">Carregando...</div>
-      </div>
-    );
+    return <SkeletonDashboard />;
   }
 
   const completadas = leituras.filter((l) => l.completada).length;
