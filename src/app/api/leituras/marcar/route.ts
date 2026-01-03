@@ -182,58 +182,49 @@ export async function POST(request: Request) {
 
         const maiorSequencia = Math.max(novaSequencia, user.maiorSequencia);
 
-        // Verificar conquistas de streak
-        if (novaSequencia === 1) {
-          const conquista = getConquistaPorId('primeiro_dia');
-          if (conquista) {
-            const existe = await prisma.userConquista.findUnique({
-              where: {
-                userId_conquistaId: {
-                  userId,
-                  conquistaId: conquista.id,
-                },
+        // Helper para verificar e desbloquear conquista
+        const verificarConquista = async (codigo: string) => {
+          const conquistaInfo = getConquistaPorId(codigo);
+          if (!conquistaInfo) return;
+
+          // Buscar a conquista no banco pelo código
+          const conquistaDb = await prisma.conquista.findUnique({
+            where: { codigo },
+          });
+
+          if (!conquistaDb) return;
+
+          const existe = await prisma.userConquista.findUnique({
+            where: {
+              userId_conquistaId: {
+                userId,
+                conquistaId: conquistaDb.id,
+              },
+            },
+          });
+
+          if (!existe) {
+            await prisma.userConquista.create({
+              data: {
+                userId,
+                conquistaId: conquistaDb.id,
               },
             });
-
-            if (!existe) {
-              await prisma.userConquista.create({
-                data: {
-                  userId,
-                  conquistaId: conquista.id,
-                },
-              });
-              xpGanho += conquista.xp;
-              conquistasDesbloqueadas.push(conquista.id);
-            }
+            xpGanho += conquistaInfo.xp;
+            conquistasDesbloqueadas.push(codigo);
           }
+        };
+
+        // Verificar conquistas de streak
+        if (novaSequencia === 1) {
+          await verificarConquista('primeiro_dia');
         }
 
         // Verificar outras conquistas de streak
         const streakConquistas = [3, 7, 14, 30, 100];
         for (const streak of streakConquistas) {
           if (novaSequencia === streak) {
-            const conquista = getConquistaPorId(`seq_${streak}`);
-            if (conquista) {
-              const existe = await prisma.userConquista.findUnique({
-                where: {
-                  userId_conquistaId: {
-                    userId,
-                    conquistaId: conquista.id,
-                  },
-                },
-              });
-
-              if (!existe) {
-                await prisma.userConquista.create({
-                  data: {
-                    userId,
-                    conquistaId: conquista.id,
-                  },
-                });
-                xpGanho += conquista.xp;
-                conquistasDesbloqueadas.push(conquista.id);
-              }
-            }
+            await verificarConquista(`seq_${streak}`);
           }
         }
 
