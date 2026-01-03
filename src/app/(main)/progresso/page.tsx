@@ -9,6 +9,7 @@ import { MonthCalendar } from '@/components/features/MonthCalendar';
 import { DayPreviewModal } from '@/components/features/DayPreviewModal';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { SkeletonProgressoPage } from '@/components/ui/Skeleton';
 
 interface ProgressoMes {
   mes: number;
@@ -74,11 +75,7 @@ export default function ProgressoPage() {
   };
 
   if (loading || !progresso) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-neutral-medium-gray">Carregando...</div>
-      </div>
-    );
+    return <SkeletonProgressoPage />;
   }
 
   return (
@@ -151,13 +148,13 @@ export default function ProgressoPage() {
                       />
                     </div>
                   </div>
-                  <Button variant="icon" className="ml-4">
+                  <div className="ml-4 w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200">
                     {expandido ? (
-                      <ChevronUp className="w-5 h-5" />
+                      <ChevronUp className="w-5 h-5" style={{ color: '#2D3440' }} />
                     ) : (
-                      <ChevronDown className="w-5 h-5" />
+                      <ChevronDown className="w-5 h-5" style={{ color: '#2D3440' }} />
                     )}
-                  </Button>
+                  </div>
                 </button>
 
                 {expandido && (

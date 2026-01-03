@@ -8,7 +8,7 @@ import {
   verificarLevelUp,
   calcularNivel,
 } from '@/lib/utils/gamificacao';
-import { getLeiturasDoDia } from '@/lib/utils/plano';
+import { getLeiturasDoDia, getDiasPorMes, getMargemMes } from '@/lib/utils/plano';
 import { getConquistaPorId } from '@/lib/constants/conquistas';
 
 export async function POST(request: Request) {
@@ -80,88 +80,151 @@ export async function POST(request: Request) {
       xpGanho += xpLeitura;
 
       // Verificar se completou todas as 4 leituras do dia
-      const leiturasCompletadas = user.leituras.filter((l) => l.completada).length;
+      const leiturasCompletadas = user.leituras.filter((l: { completada: boolean }) => l.completada).length;
       const todasCompletadas = leiturasCompletadas === 4;
 
       if (todasCompletadas) {
         const xpBonus = calcularXPDiaCompleto(user.sequenciaAtual);
         xpGanho += xpBonus;
 
-        // Atualizar streak
+        // Atualizar streak com lógica melhorada
+        // Considera a margem do plano (25 dias por mês em meses de 30-31 dias)
         const hoje = new Date();
-        const ontem = new Date(hoje);
-        ontem.setDate(ontem.getDate() - 1);
+        const diasPorMes = getDiasPorMes(); // 25
 
-        const leituraOntem = await prisma.leitura.findFirst({
+        // Buscar todos os dias completados deste mês
+        const leiturasCompletadasMes = await prisma.leitura.findMany({
           where: {
             userId,
-            mes: ontem.getMonth() + 1,
-            dia: ontem.getDate(),
+            mes,
             completada: true,
           },
         });
 
+        // Contar quantos dias têm 4 leituras completadas
+        const leiturasPorDia = new Map<number, number>();
+        leiturasCompletadasMes.forEach((l: { dia: number }) => {
+          const count = leiturasPorDia.get(l.dia) || 0;
+          leiturasPorDia.set(l.dia, count + 1);
+        });
+
+        const diasCompletosNoMes: number[] = [];
+        leiturasPorDia.forEach((count, diaNum) => {
+          if (count >= 4) {
+            diasCompletosNoMes.push(diaNum);
+          }
+        });
+        diasCompletosNoMes.sort((a, b) => a - b);
+
+        // Lógica de streak melhorada:
+        // 1. Verificar se há uma sequência contínua de dias completados
+        // 2. A sequência pode ter "buracos" se ainda há margem disponível
         let novaSequencia = user.sequenciaAtual;
-        if (leituraOntem) {
-          novaSequencia = user.sequenciaAtual + 1;
+
+        // Verificar o dia anterior do plano (não o dia do calendário)
+        const diaAnteriorPlano = dia - 1;
+
+        if (diaAnteriorPlano >= 1) {
+          // Verificar se o dia anterior do plano foi completado
+          const diaAnteriorCompleto = diasCompletosNoMes.includes(diaAnteriorPlano);
+
+          if (diaAnteriorCompleto) {
+            // Dia anterior completo - incrementar streak
+            novaSequencia = user.sequenciaAtual + 1;
+          } else {
+            // Dia anterior não completo - verificar se ainda tem margem
+            const diasDoMesAtual = new Date(hoje.getFullYear(), mes, 0).getDate();
+            const margemMes = diasDoMesAtual - diasPorMes;
+            const diaAtualCalendario = hoje.getDate();
+
+            // Quantos dias do plano deveriam estar feitos até agora
+            const diasProgramados = Math.min(diaAtualCalendario, diasPorMes);
+
+            // Quantos dias estão pendentes
+            const diasPendentes = diasProgramados - diasCompletosNoMes.length;
+
+            // Se ainda tem margem, mantém o streak (não quebra)
+            // Margem disponível = margem total - dias já "usados"
+            const margemDisponivel = margemMes - Math.max(0, diasPendentes - 1);
+
+            if (margemDisponivel > 0 && user.sequenciaAtual > 0) {
+              // Ainda tem margem - mantém streak mas não incrementa
+              // O streak só incrementa quando completa dias em sequência
+              novaSequencia = user.sequenciaAtual;
+            } else if (diasCompletosNoMes.length === 1 && diasCompletosNoMes[0] === dia) {
+              // Primeiro dia completado - começa streak
+              novaSequencia = 1;
+            } else {
+              // Sem margem e com buraco - reseta streak
+              novaSequencia = 1;
+            }
+          }
         } else {
-          novaSequencia = 1;
+          // Primeiro dia do mês - verificar mês anterior
+          const ontem = new Date(hoje);
+          ontem.setDate(ontem.getDate() - 1);
+
+          const leituraOntemMesAnterior = await prisma.leitura.findFirst({
+            where: {
+              userId,
+              mes: ontem.getMonth() + 1,
+              dia: ontem.getDate(),
+              completada: true,
+            },
+          });
+
+          if (leituraOntemMesAnterior) {
+            novaSequencia = user.sequenciaAtual + 1;
+          } else {
+            novaSequencia = 1;
+          }
         }
 
         const maiorSequencia = Math.max(novaSequencia, user.maiorSequencia);
 
-        // Verificar conquistas de streak
-        if (novaSequencia === 1) {
-          const conquista = getConquistaPorId('primeiro_dia');
-          if (conquista) {
-            const existe = await prisma.userConquista.findUnique({
-              where: {
-                userId_conquistaId: {
-                  userId,
-                  conquistaId: conquista.id,
-                },
+        // Helper para verificar e desbloquear conquista
+        const verificarConquista = async (codigo: string) => {
+          const conquistaInfo = getConquistaPorId(codigo);
+          if (!conquistaInfo) return;
+
+          // Buscar a conquista no banco pelo código
+          const conquistaDb = await prisma.conquista.findUnique({
+            where: { codigo },
+          });
+
+          if (!conquistaDb) return;
+
+          const existe = await prisma.userConquista.findUnique({
+            where: {
+              userId_conquistaId: {
+                userId,
+                conquistaId: conquistaDb.id,
+              },
+            },
+          });
+
+          if (!existe) {
+            await prisma.userConquista.create({
+              data: {
+                userId,
+                conquistaId: conquistaDb.id,
               },
             });
-
-            if (!existe) {
-              await prisma.userConquista.create({
-                data: {
-                  userId,
-                  conquistaId: conquista.id,
-                },
-              });
-              xpGanho += conquista.xp;
-              conquistasDesbloqueadas.push(conquista.id);
-            }
+            xpGanho += conquistaInfo.xp;
+            conquistasDesbloqueadas.push(codigo);
           }
+        };
+
+        // Verificar conquistas de streak
+        if (novaSequencia === 1) {
+          await verificarConquista('primeiro_dia');
         }
 
         // Verificar outras conquistas de streak
         const streakConquistas = [3, 7, 14, 30, 100];
         for (const streak of streakConquistas) {
           if (novaSequencia === streak) {
-            const conquista = getConquistaPorId(`seq_${streak}`);
-            if (conquista) {
-              const existe = await prisma.userConquista.findUnique({
-                where: {
-                  userId_conquistaId: {
-                    userId,
-                    conquistaId: conquista.id,
-                  },
-                },
-              });
-
-              if (!existe) {
-                await prisma.userConquista.create({
-                  data: {
-                    userId,
-                    conquistaId: conquista.id,
-                  },
-                });
-                xpGanho += conquista.xp;
-                conquistasDesbloqueadas.push(conquista.id);
-              }
-            }
+            await verificarConquista(`seq_${streak}`);
           }
         }
 

@@ -31,15 +31,15 @@ export function Header() {
             {session.user.name || session.user.email}
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <LevelBadge xp={xp} showLabel={false} />
-          <Button
-            variant="icon"
+          <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             aria-label="Sair"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all"
           >
-            <LogOut className="w-5 h-5" />
-          </Button>
+            <LogOut className="w-5 h-5" style={{ color: '#2D3440' }} />
+          </button>
         </div>
       </div>
     </header>

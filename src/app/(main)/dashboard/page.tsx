@@ -13,10 +13,13 @@ import { ReadingCard } from '@/components/features/ReadingCard';
 import { MonthCalendar } from '@/components/features/MonthCalendar';
 import { DayProgress } from '@/components/features/DayProgress';
 import { DayPreviewModal } from '@/components/features/DayPreviewModal';
+import { PendingReadingsAlert } from '@/components/features/PendingReadingsAlert';
 import { Toast, ToastType } from '@/components/ui/Toast';
-import { ArrowRight, BookOpen } from 'lucide-react';
+import { ArrowRight, BookOpen, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { SkeletonDashboard } from '@/components/ui/Skeleton';
 import type { LeituraDia } from '@/types/plano';
+import type { StatusLeituraMes } from '@/lib/utils/plano';
 
 interface LeituraComStatus extends LeituraDia {
   completada: boolean;
@@ -47,6 +50,11 @@ export default function DashboardPage() {
     description?: string;
     visible: boolean;
   } | null>(null);
+
+  // Estado para status do mês (pendentes, margem, etc.)
+  const [statusMesAtual, setStatusMesAtual] = useState<
+    (StatusLeituraMes & { hojeCompleto: boolean; mesNome: string; margemTotal: number }) | null
+  >(null);
 
   // Estado para modal de preview
   const [previewModal, setPreviewModal] = useState<{
@@ -90,6 +98,11 @@ export default function DashboardPage() {
           setDiasCompletados(new Set(mesAtual.diasCompletadosArray));
         }
       }
+
+      // Status do mês atual (pendentes, margem, etc.)
+      if (progressoData.statusMesAtual) {
+        setStatusMesAtual(progressoData.statusMesAtual);
+      }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -105,7 +118,7 @@ export default function DashboardPage() {
     setPreviewModal({ isOpen: true, dia: diaClicado, mes: mesClicado });
   };
 
-  const handleNavigateToDay = () => {
+  const handleNavigateToModalDay = () => {
     const { dia: diaModal, mes: mesModal } = previewModal;
     setPreviewModal({ isOpen: false, dia: 0, mes: 0 });
     router.push(`/leitura?mes=${mesModal}&dia=${diaModal}`);
@@ -211,14 +224,20 @@ export default function DashboardPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="text-neutral-medium-gray">Carregando...</div>
-      </div>
-    );
+    return <SkeletonDashboard />;
   }
 
   const completadas = leituras.filter((l) => l.completada).length;
+  const hojeCompleto = completadas === 4;
+
+  // Determina se devemos mostrar as leituras de outro dia (recuperação)
+  const diaParaExibir = statusMesAtual?.proximoDiaRecomendado || dia;
+  const exibindoDiaAnterior = diaParaExibir < dia && !hojeCompleto && statusMesAtual && statusMesAtual.diasPendentes.length > 0;
+
+  // Navegar para um dia específico
+  const handleNavigateToDay = (diaDestino: number) => {
+    router.push(`/leitura?mes=${mes}&dia=${diaDestino}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -232,24 +251,69 @@ export default function DashboardPage() {
         </p>
       </div>
 
+      {/* Alerta de dias pendentes */}
+      {statusMesAtual && !statusMesAtual.emDia && (
+        <PendingReadingsAlert
+          status={statusMesAtual}
+          mesNome={statusMesAtual.mesNome}
+          onNavigateToDay={handleNavigateToDay}
+        />
+      )}
+
       {/* Streak e XP */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card variant="peach">
-          <StreakCounter streak={streak} maiorStreak={maiorStreak} />
+          <StreakCounter
+            streak={streak}
+            maiorStreak={maiorStreak}
+            diasPendentes={statusMesAtual?.diasAtrasados}
+            diasMargemRestante={statusMesAtual?.diasMargemRestante}
+            hojeCompleto={hojeCompleto}
+          />
         </Card>
         <Card>
           <XPProgressBar xp={xp} />
         </Card>
       </div>
 
+      {/* Sugestão inteligente quando há dias pendentes */}
+      {exibindoDiaAnterior && (
+        <Card className="border-2 border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50">
+          <div className="flex items-center gap-3 mb-3">
+            <Sparkles className="w-5 h-5 text-amber-600" />
+            <h2 className="text-lg font-semibold text-amber-800">
+              Sugestão: Faça o Dia {diaParaExibir} primeiro
+            </h2>
+          </div>
+          <p className="text-sm text-amber-700 mb-3">
+            Você tem {statusMesAtual.diasAtrasados} dia(s) pendente(s).
+            Recomendamos completar em ordem para manter sua sequência.
+          </p>
+          <Button
+            variant="secondary"
+            onClick={() => handleNavigateToDay(diaParaExibir)}
+            className="gap-2 bg-amber-100 hover:bg-amber-200 text-amber-700"
+          >
+            <BookOpen className="w-4 h-4" />
+            Ir para Dia {diaParaExibir}
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+        </Card>
+      )}
+
       {/* Leituras do dia */}
       <Card>
         <h2 className="text-xl font-semibold text-neutral-dark-gray mb-4">
           📖 Leituras de Hoje ({format(hoje, 'dd/MM')})
+          {hojeCompleto && (
+            <span className="ml-2 text-sm font-normal text-green-600">
+              ✓ Completo
+            </span>
+          )}
         </h2>
-        
+
         <DayProgress total={4} completadas={completadas} className="mb-4" />
-        
+
         <div className="space-y-3">
           {leituras.map((leitura) => (
             <ReadingCard
@@ -296,7 +360,7 @@ export default function DashboardPage() {
         onClose={() => setPreviewModal({ isOpen: false, dia: 0, mes: 0 })}
         dia={previewModal.dia}
         mes={previewModal.mes}
-        onNavigate={handleNavigateToDay}
+        onNavigate={handleNavigateToModalDay}
       />
 
       {/* Toast */}

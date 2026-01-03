@@ -24,7 +24,7 @@ export async function GET() {
 
     const conquistasComStatus = CONQUISTAS.map((conquista) => {
       const userConquista = userConquistas.find(
-        (uc) => uc.conquista.codigo === conquista.id
+        (uc: { conquista: { codigo: string } }) => uc.conquista.codigo === conquista.id
       );
 
       return {

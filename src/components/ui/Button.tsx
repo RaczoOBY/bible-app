@@ -13,7 +13,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       primary: 'bg-neutral-black text-white rounded-full px-6 py-3 hover:bg-neutral-dark-gray',
       secondary: 'bg-white/80 text-neutral-dark-gray rounded-full px-6 py-3 border border-black/8 hover:bg-white',
-      icon: 'bg-white/80 rounded-full w-11 h-11 flex items-center justify-center shadow-soft hover:bg-white',
+      icon: 'bg-white/80 text-neutral-dark-gray rounded-full w-11 h-11 flex items-center justify-center shadow-soft hover:bg-white border border-black/8',
       pill: 'bg-white/90 rounded-full px-4 py-2.5 text-sm font-medium gap-1.5',
     };
     

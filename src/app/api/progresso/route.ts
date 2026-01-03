@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db/prisma';
-import { getPlanoCompleto } from '@/lib/utils/plano';
+import { getPlanoCompleto, calcularStatusLeituraMes, getMargemMes } from '@/lib/utils/plano';
 
 export async function GET() {
   try {
@@ -26,7 +26,7 @@ export async function GET() {
     const totalDias = plano.metadata.totalDias;
     const diasCompletados = new Set<string>();
 
-    leiturasCompletadas.forEach((leitura) => {
+    leiturasCompletadas.forEach((leitura: { mes: number; dia: number }) => {
       const chave = `${leitura.mes}-${leitura.dia}`;
       diasCompletados.add(chave);
     });
@@ -40,8 +40,8 @@ export async function GET() {
       const leiturasPorDia = new Map<number, number>();
 
       leiturasCompletadas
-        .filter((l) => l.mes === mes.id)
-        .forEach((leitura) => {
+        .filter((l: { mes: number }) => l.mes === mes.id)
+        .forEach((leitura: { dia: number }) => {
           const count = leiturasPorDia.get(leitura.dia) || 0;
           leiturasPorDia.set(leitura.dia, count + 1);
         });
@@ -74,6 +74,20 @@ export async function GET() {
       },
     });
 
+    // Calcular status do mês atual
+    const hoje = new Date();
+    const mesAtual = hoje.getMonth() + 1;
+    const mesAtualData = progressoPorMes.find((m) => m.mes === mesAtual);
+    const statusMesAtual = calcularStatusLeituraMes(
+      mesAtual,
+      mesAtualData?.diasCompletadosArray || [],
+      hoje
+    );
+
+    // Verificar se hoje foi completado
+    const diaAtual = hoje.getDate();
+    const hojeCompleto = mesAtualData?.diasCompletadosArray?.includes(diaAtual) || false;
+
     return NextResponse.json({
       totalDias,
       diasCompletados: diasCompletadosCount,
@@ -83,6 +97,13 @@ export async function GET() {
       maiorSequencia: user?.maiorSequencia || 0,
       xp: user?.xp || 0,
       nivel: user?.nivel || 1,
+      // Novo: informações do mês atual para UX melhorada
+      statusMesAtual: {
+        ...statusMesAtual,
+        hojeCompleto,
+        mesNome: mesAtualData?.nome || '',
+        margemTotal: getMargemMes(mesAtual),
+      },
     });
   } catch (error) {
     console.error('Erro ao buscar progresso:', error);
