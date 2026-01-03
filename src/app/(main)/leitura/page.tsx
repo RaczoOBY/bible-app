@@ -240,14 +240,14 @@ export default function LeituraPage() {
 
         {/* Controles de navegação */}
         <div className="flex items-center justify-between gap-2 mb-6 p-3 bg-white/40 rounded-xl">
-          <Button
-            variant="icon"
+          <button
             onClick={() => mudarDia('anterior')}
             disabled={mes === 1 && dia === 1}
             title="Dia anterior"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-white/80 border border-black/8 shadow-soft hover:bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="w-5 h-5" />
-          </Button>
+            <ChevronLeft className="w-5 h-5 text-neutral-dark-gray" />
+          </button>
 
           <div className="flex items-center gap-2">
             <Button
@@ -274,14 +274,14 @@ export default function LeituraPage() {
             )}
           </div>
 
-          <Button
-            variant="icon"
+          <button
             onClick={() => mudarDia('proximo')}
             disabled={mes === 12 && dia === 25}
             title="Próximo dia"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-white/80 border border-black/8 shadow-soft hover:bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <ChevronRight className="w-5 h-5" />
-          </Button>
+            <ChevronRight className="w-5 h-5 text-neutral-dark-gray" />
+          </button>
         </div>
 
         <DayProgress total={4} completadas={completadas} className="mb-6" />

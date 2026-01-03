@@ -148,13 +148,13 @@ export default function ProgressoPage() {
                       />
                     </div>
                   </div>
-                  <Button variant="icon" className="ml-4">
+                  <div className="ml-4 w-10 h-10 rounded-full flex items-center justify-center bg-white/60 border border-black/8">
                     {expandido ? (
-                      <ChevronUp className="w-5 h-5" />
+                      <ChevronUp className="w-5 h-5 text-neutral-dark-gray" />
                     ) : (
-                      <ChevronDown className="w-5 h-5" />
+                      <ChevronDown className="w-5 h-5 text-neutral-dark-gray" />
                     )}
-                  </Button>
+                  </div>
                 </button>
 
                 {expandido && (
