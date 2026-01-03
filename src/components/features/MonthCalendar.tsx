@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { Check } from 'lucide-react';
 import { getMesData, getDiasPorMes } from '@/lib/utils/plano';
 import { cn } from '@/lib/utils/cn';
 
@@ -48,7 +49,8 @@ export function MonthCalendar({
             onClick={() => handleClick(dia)}
             disabled={!isClickable}
             className={cn(
-              'aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all',
+              'aspect-square rounded-xl flex items-center justify-center text-sm font-medium',
+              'transition-all duration-300 ease-out',
               completado
                 ? 'bg-primary-teal text-white shadow-soft'
                 : hoje
@@ -68,7 +70,14 @@ export function MonthCalendar({
               !isClickable && 'cursor-default'
             )}
           >
-            {dia}
+            {completado ? (
+              <span className="flex items-center gap-0.5">
+                <Check className="w-3 h-3" strokeWidth={3} />
+                <span className="text-xs">{dia}</span>
+              </span>
+            ) : (
+              dia
+            )}
           </button>
         );
       })}

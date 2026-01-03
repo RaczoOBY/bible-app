@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     const leiturasComStatus = leiturasDoDia.leituras.map((leitura) => {
       const completada = leiturasCompletadas.find(
-        (l) => l.tipo === leitura.tipo
+        (l: { tipo: string }) => l.tipo === leitura.tipo
       );
 
       return {
