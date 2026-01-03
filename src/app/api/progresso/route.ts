@@ -34,20 +34,30 @@ export async function GET() {
     const diasCompletadosCount = diasCompletados.size;
     const progressoPercentual = (diasCompletadosCount / totalDias) * 100;
 
-    // Estatísticas por mês
+    // Estatísticas por mês com dias específicos completados
     const progressoPorMes = plano.meses.map((mes) => {
       const diasMesCompletados = new Set<number>();
-      
+      const leiturasPorDia = new Map<number, number>();
+
       leiturasCompletadas
         .filter((l) => l.mes === mes.id)
         .forEach((leitura) => {
-          diasMesCompletados.add(leitura.dia);
+          const count = leiturasPorDia.get(leitura.dia) || 0;
+          leiturasPorDia.set(leitura.dia, count + 1);
         });
+
+      // Um dia só está "completado" se tiver todas as 4 leituras
+      leiturasPorDia.forEach((count, dia) => {
+        if (count >= 4) {
+          diasMesCompletados.add(dia);
+        }
+      });
 
       return {
         mes: mes.id,
         nome: mes.nome,
         diasCompletados: diasMesCompletados.size,
+        diasCompletadosArray: Array.from(diasMesCompletados), // Array de dias específicos
         totalDias: plano.metadata.diasPorMes,
         percentual: (diasMesCompletados.size / plano.metadata.diasPorMes) * 100,
       };
