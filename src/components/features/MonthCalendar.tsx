@@ -9,6 +9,8 @@ interface MonthCalendarProps {
   diasCompletados: Set<number>;
   diaAtual?: number;
   className?: string;
+  onDiaClick?: (dia: number, mes: number) => void;
+  interactive?: boolean;
 }
 
 export function MonthCalendar({
@@ -16,6 +18,8 @@ export function MonthCalendar({
   diasCompletados,
   diaAtual,
   className,
+  onDiaClick,
+  interactive = true,
 }: MonthCalendarProps) {
   const mesData = useMemo(() => getMesData(mes), [mes]);
   const diasPorMes = getDiasPorMes();
@@ -24,26 +28,48 @@ export function MonthCalendar({
 
   const dias = Array.from({ length: diasPorMes }, (_, i) => i + 1);
 
+  const handleClick = (dia: number) => {
+    if (interactive && onDiaClick) {
+      onDiaClick(dia, mes);
+    }
+  };
+
   return (
     <div className={cn('grid grid-cols-5 gap-2', className)}>
       {dias.map((dia) => {
         const completado = diasCompletados.has(dia);
         const hoje = dia === diaAtual;
+        const isClickable = interactive && onDiaClick;
 
         return (
-          <div
+          <button
             key={dia}
+            type="button"
+            onClick={() => handleClick(dia)}
+            disabled={!isClickable}
             className={cn(
               'aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all',
               completado
                 ? 'bg-primary-teal text-white shadow-soft'
                 : hoje
                 ? 'bg-primary-mint text-neutral-dark-gray ring-2 ring-primary-teal'
-                : 'bg-white/60 text-neutral-medium-gray'
+                : 'bg-white/60 text-neutral-medium-gray',
+              isClickable && [
+                'cursor-pointer',
+                'hover:scale-105 hover:shadow-md',
+                completado
+                  ? 'hover:bg-primary-teal/90'
+                  : hoje
+                  ? 'hover:bg-primary-mint/80'
+                  : 'hover:bg-white/80 hover:text-neutral-dark-gray',
+                'active:scale-95',
+                'focus:outline-none focus:ring-2 focus:ring-primary-teal focus:ring-offset-2',
+              ],
+              !isClickable && 'cursor-default'
             )}
           >
             {dia}
-          </div>
+          </button>
         );
       })}
     </div>

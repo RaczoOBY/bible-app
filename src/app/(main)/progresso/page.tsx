@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { XPProgressBar } from '@/components/features/XPProgressBar';
 import { StreakCounter } from '@/components/features/StreakCounter';
 import { MonthCalendar } from '@/components/features/MonthCalendar';
+import { DayPreviewModal } from '@/components/features/DayPreviewModal';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -12,11 +14,13 @@ interface ProgressoMes {
   mes: number;
   nome: string;
   diasCompletados: number;
+  diasCompletadosArray: number[];
   totalDias: number;
   percentual: number;
 }
 
 export default function ProgressoPage() {
+  const router = useRouter();
   const [progresso, setProgresso] = useState<{
     totalDias: number;
     diasCompletados: number;
@@ -29,6 +33,15 @@ export default function ProgressoPage() {
   } | null>(null);
   const [mesExpandido, setMesExpandido] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Estado para modal de preview
+  const [previewModal, setPreviewModal] = useState<{
+    isOpen: boolean;
+    dia: number;
+    mes: number;
+  }>({ isOpen: false, dia: 0, mes: 0 });
+
+  const hoje = new Date();
 
   useEffect(() => {
     carregarProgresso();
@@ -48,6 +61,16 @@ export default function ProgressoPage() {
 
   const toggleMes = (mes: number) => {
     setMesExpandido(mesExpandido === mes ? null : mes);
+  };
+
+  const handleCalendarClick = (dia: number, mes: number) => {
+    setPreviewModal({ isOpen: true, dia, mes });
+  };
+
+  const handleNavigateToDay = () => {
+    const { dia, mes } = previewModal;
+    setPreviewModal({ isOpen: false, dia: 0, mes: 0 });
+    router.push(`/leitura?mes=${mes}&dia=${dia}`);
   };
 
   if (loading || !progresso) {
@@ -96,29 +119,35 @@ export default function ProgressoPage() {
         </h2>
 
         <div className="space-y-3">
-          {progresso.progressoPorMes.map((mes) => {
-            const expandido = mesExpandido === mes.mes;
-            const diasCompletadosSet = new Set<number>();
-            // Aqui você precisaria buscar os dias específicos completados
-            // Por simplicidade, vamos mostrar apenas o progresso
+          {progresso.progressoPorMes.map((mesData) => {
+            const expandido = mesExpandido === mesData.mes;
+            const diasCompletadosSet = new Set<number>(mesData.diasCompletadosArray || []);
+            const isCurrentMonth = mesData.mes === hoje.getMonth() + 1;
 
             return (
-              <div key={mes.mes} className="border border-black/8 rounded-xl overflow-hidden">
+              <div key={mesData.mes} className="border border-black/8 rounded-xl overflow-hidden">
                 <button
-                  onClick={() => toggleMes(mes.mes)}
+                  onClick={() => toggleMes(mesData.mes)}
                   className="w-full p-4 flex items-center justify-between hover:bg-white/40 transition-colors"
                 >
                   <div className="flex-1 text-left">
                     <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold text-neutral-dark-gray">{mes.nome}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-neutral-dark-gray">{mesData.nome}</p>
+                        {isCurrentMonth && (
+                          <span className="px-2 py-0.5 bg-primary-mint text-primary-teal text-xs rounded-full font-medium">
+                            Atual
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-neutral-medium-gray">
-                        {mes.diasCompletados}/{mes.totalDias} dias
+                        {mesData.diasCompletados}/{mesData.totalDias} dias
                       </p>
                     </div>
                     <div className="h-2 rounded-full bg-black/8 overflow-hidden">
                       <div
                         className="h-full bg-gradient-to-r from-primary-teal to-primary-sage transition-all"
-                        style={{ width: `${mes.percentual}%` }}
+                        style={{ width: `${mesData.percentual}%` }}
                       />
                     </div>
                   </div>
@@ -134,9 +163,15 @@ export default function ProgressoPage() {
                 {expandido && (
                   <div className="p-4 border-t border-black/8">
                     <MonthCalendar
-                      mes={mes.mes}
+                      mes={mesData.mes}
                       diasCompletados={diasCompletadosSet}
+                      diaAtual={isCurrentMonth ? hoje.getDate() : undefined}
+                      onDiaClick={handleCalendarClick}
+                      interactive={true}
                     />
+                    <p className="text-xs text-neutral-medium-gray text-center mt-3">
+                      Toque em um dia para ver as leituras
+                    </p>
                   </div>
                 )}
               </div>
@@ -144,6 +179,15 @@ export default function ProgressoPage() {
           })}
         </div>
       </Card>
+
+      {/* Modal de preview */}
+      <DayPreviewModal
+        isOpen={previewModal.isOpen}
+        onClose={() => setPreviewModal({ isOpen: false, dia: 0, mes: 0 })}
+        dia={previewModal.dia}
+        mes={previewModal.mes}
+        onNavigate={handleNavigateToDay}
+      />
     </div>
   );
 }
