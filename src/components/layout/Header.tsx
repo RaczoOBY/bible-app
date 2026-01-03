@@ -36,9 +36,9 @@ export function Header() {
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             aria-label="Sair"
-            className="w-10 h-10 rounded-full flex items-center justify-center bg-white/80 border border-black/8 shadow-soft hover:bg-white transition-all"
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all"
           >
-            <LogOut className="w-5 h-5 text-neutral-dark-gray" />
+            <LogOut className="w-5 h-5" style={{ color: '#2D3440' }} />
           </button>
         </div>
       </div>

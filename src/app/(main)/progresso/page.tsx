@@ -148,11 +148,11 @@ export default function ProgressoPage() {
                       />
                     </div>
                   </div>
-                  <div className="ml-4 w-10 h-10 rounded-full flex items-center justify-center bg-white/60 border border-black/8">
+                  <div className="ml-4 w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200">
                     {expandido ? (
-                      <ChevronUp className="w-5 h-5 text-neutral-dark-gray" />
+                      <ChevronUp className="w-5 h-5" style={{ color: '#2D3440' }} />
                     ) : (
-                      <ChevronDown className="w-5 h-5 text-neutral-dark-gray" />
+                      <ChevronDown className="w-5 h-5" style={{ color: '#2D3440' }} />
                     )}
                   </div>
                 </button>

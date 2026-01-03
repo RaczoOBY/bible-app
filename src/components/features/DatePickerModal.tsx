@@ -66,21 +66,17 @@ export function DatePickerModal({
           <button
             onClick={handleMesAnterior}
             disabled={mesSelecionado === 1}
-            className={cn(
-              'w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              'bg-neutral-light-gray/50 hover:bg-neutral-light-gray',
-              'disabled:opacity-30 disabled:cursor-not-allowed'
-            )}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Mês anterior"
           >
-            <ChevronLeft className="w-5 h-5 text-neutral-dark-gray" />
+            <ChevronLeft className="w-5 h-5" style={{ color: '#2D3440' }} />
           </button>
 
           <div className="text-center flex-1">
-            <h3 className="text-lg font-semibold text-neutral-dark-gray">
+            <h3 className="text-lg font-semibold" style={{ color: '#2D3440' }}>
               {mesData?.nome || 'Mês'}
             </h3>
-            <p className="text-sm text-neutral-medium-gray">
+            <p className="text-sm" style={{ color: '#8890A0' }}>
               Toque em um dia para ver as leituras
             </p>
           </div>
@@ -88,14 +84,10 @@ export function DatePickerModal({
           <button
             onClick={handleMesProximo}
             disabled={mesSelecionado === 12}
-            className={cn(
-              'w-10 h-10 rounded-full flex items-center justify-center transition-all',
-              'bg-neutral-light-gray/50 hover:bg-neutral-light-gray',
-              'disabled:opacity-30 disabled:cursor-not-allowed'
-            )}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed"
             aria-label="Próximo mês"
           >
-            <ChevronRight className="w-5 h-5 text-neutral-dark-gray" />
+            <ChevronRight className="w-5 h-5" style={{ color: '#2D3440' }} />
           </button>
         </div>
 

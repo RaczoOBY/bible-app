@@ -244,9 +244,9 @@ export default function LeituraPage() {
             onClick={() => mudarDia('anterior')}
             disabled={mes === 1 && dia === 1}
             title="Dia anterior"
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-white/80 border border-black/8 shadow-soft hover:bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <ChevronLeft className="w-5 h-5 text-neutral-dark-gray" />
+            <ChevronLeft className="w-5 h-5" style={{ color: '#2D3440' }} />
           </button>
 
           <div className="flex items-center gap-2">
@@ -255,7 +255,7 @@ export default function LeituraPage() {
               onClick={() => setDatePickerOpen(true)}
               className="gap-2"
             >
-              <Calendar className="w-4 h-4" />
+              <Calendar className="w-4 h-4" style={{ color: '#2D3440' }} />
               <span className="font-medium">
                 {format(new Date(2026, mes - 1, dia), 'dd/MM', { locale: ptBR })}
               </span>
@@ -268,7 +268,7 @@ export default function LeituraPage() {
                 className="gap-2"
                 title="Ir para hoje"
               >
-                <Home className="w-4 h-4" />
+                <Home className="w-4 h-4" style={{ color: '#2D3440' }} />
                 <span className="hidden sm:inline">Hoje</span>
               </Button>
             )}
@@ -278,9 +278,9 @@ export default function LeituraPage() {
             onClick={() => mudarDia('proximo')}
             disabled={mes === 12 && dia === 25}
             title="Próximo dia"
-            className="w-11 h-11 rounded-full flex items-center justify-center bg-white/80 border border-black/8 shadow-soft hover:bg-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="w-11 h-11 rounded-full flex items-center justify-center bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            <ChevronRight className="w-5 h-5 text-neutral-dark-gray" />
+            <ChevronRight className="w-5 h-5" style={{ color: '#2D3440' }} />
           </button>
         </div>
 

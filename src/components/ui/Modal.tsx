@@ -53,14 +53,13 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
               <h2 className="text-xl font-semibold" style={{ color: 'var(--neutral-dark-gray)' }}>{title}</h2>
             )}
             {onClose && (
-              <Button
-                variant="icon"
-                size="sm"
+              <button
                 onClick={onClose}
-                className="w-8 h-8"
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-all"
+                aria-label="Fechar"
               >
-                <X className="w-4 h-4" />
-              </Button>
+                <X className="w-4 h-4" style={{ color: '#2D3440' }} />
+              </button>
             )}
           </div>
         )}
